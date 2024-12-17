@@ -1,0 +1,109 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+
+struct node{
+    int value;
+    struct node *left, *right, *parent;
+};
+
+void visit(struct node *node)
+{
+    printf("%d\n", node->value);
+}
+
+void prev_order_recursion(struct node *head)
+{
+    if (head != NULL) {
+        visit(head);
+        prev_order_recursion(head->left);
+        prev_order_recursion(head->right);
+    }
+
+    return;
+}
+
+void prev_order_recursion(struct node *node)
+{
+    stack_init(&order_stack);
+
+    while(node != NULL && !stack_is_empty(order_stack)) {
+        if (node != NULL) {
+            // visit(node);
+            push(order_stack, node);
+            node = node->left;
+        } else {
+            node = pop(order_stack);
+            visit(node);
+            node = node->right;
+        }
+    }
+}
+
+STACK_DEFINE(order_stack);
+
+void post_order_recursion(struct node *node)
+{
+    stack_init(&order_stack);
+
+    struct node *last_visited = NULL;
+
+    while(node != NULL && !stack_is_empty(order_stack)) {
+        if (node != NULL) {
+            push(order_stack, node);
+            node = node->left;
+        } else {
+            if (node->right != NULL && last_visited != node->right) {
+                node = node->right;
+            } else {
+                node = pop(order_stack);
+                visit(node);
+                last_visited = node;
+            }
+        }
+    }
+}
+
+
+QUEUE_DEFINE(order_queue);
+
+void level_order(struct node *node)
+{
+    queue_init(&order_queue);
+
+    while (node != NULL && !queue_is_empty(order_queue)) {
+        if (node->left != NULL) {
+            push(order_queue, node->left);
+        }
+        if (node->right != NULL) {
+            push(order_queue, node->right);
+        }
+
+        node = pop(order_queue);
+        visit(node);
+    }
+}
+
+void left_rotate(struct node *node)
+{
+    if (node == NULL || node->right == NULL) {
+        return;
+    }
+
+    struct node *right = node->right;
+
+    if (right->left != NULL) {
+        right->left->parent = node;
+    }
+    node->right = right->left;
+
+    right->parent = node->parent;
+    if (right->parent != NULL) {
+        if (right->parent->left == node) {
+            right->parent->left = right;
+        } else {
+            right->parent->right = right;
+        }
+    }
+}
